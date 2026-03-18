@@ -1,0 +1,1597 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Faelans Space</title>
+    <link rel="icon" type="image/png" href="favicon.png"/>
+    <link rel="stylesheet" href="/tailwind.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Fondamento&family=Playfair+Display:wght@400;700&family=Oswald:wght@400;700&family=Pacifico&family=Bebas+Neue&family=Lobster&family=Righteous&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+    <style>
+        html {
+            font-size: 110%;
+        }
+        @media (max-width: 768px) {
+            html { 
+                font-size: 100%;
+                overflow-x: hidden;
+            }
+            body {
+                overflow-x: hidden;
+                width: 100%;
+                position: relative;
+            }
+            .home-title { font-size: 2.5rem !important; }
+            .grid-cols-2 { grid-template-columns: 1fr !important; }
+            .max-w-6xl { 
+                padding-left: 1rem !important; 
+                padding-right: 1rem !important;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            .nav-link { padding-left: 0.75rem !important; padding-right: 0.75rem !important; font-size: 0.65rem !important; }
+            .card { padding: 1rem !important; }
+        }
+        :root {
+            --transition-fast: 120ms;
+            --transition-normal: 200ms;
+            --transition-slow: 300ms;
+            --ink: #0a0c0f;
+            --deep: #0d1117;
+            --void: #080a0d;
+            --teal-glow: #1a4a4a;
+            --ember: #c4622a;
+            --rust: #8b3a1a;
+            --mist: #adc4c4;
+            --pale: #ddeaea;
+            --antler-gold: #b8860b;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0.35;
+        }
+
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #2a3a3a transparent;
+        }
+
+        *::-webkit-scrollbar { width: 5px; height: 5px; }
+        *::-webkit-scrollbar-track { background: transparent; }
+        *::-webkit-scrollbar-thumb { background: #2a3a3a; border-radius: 3px; }
+
+
+
+        .nav-link {
+            position: relative;
+            transition: color var(--transition-normal) ease;
+            font-family: 'Cinzel', serif;
+            font-size: 0.7rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--mist) !important;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--ember), transparent);
+            transform: scaleX(0);
+            transition: transform var(--transition-normal) ease;
+        }
+
+        .nav-link:hover::after,
+        .nav-link.active::after {
+            transform: scaleX(1);
+        }
+
+        .nav-link:hover { color: var(--pale) !important; }
+        .nav-link.active { color: var(--pale) !important; }
+
+        .card {
+            background: linear-gradient(145deg, rgba(18, 26, 26, 0.92), rgba(10, 12, 15, 0.97));
+            border: 1px solid rgba(138, 168, 168, 0.12);
+            backdrop-filter: blur(10px);
+            transition: all var(--transition-normal) ease;
+            border-radius: 3px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(196, 98, 42, 0.03) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .card:hover {
+            border-color: rgba(196, 98, 42, 0.35);
+            box-shadow: 0 8px 32px -8px rgba(196, 98, 42, 0.15), inset 0 1px 0 rgba(196, 98, 42, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, rgba(196, 98, 42, 0.85), rgba(139, 58, 26, 0.9));
+            border: 1px solid rgba(196, 98, 42, 0.4);
+            transition: all var(--transition-fast) ease;
+            font-family: 'Cinzel', serif;
+            font-size: 0.7rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, rgba(220, 115, 55, 0.9), rgba(196, 98, 42, 0.95));
+            box-shadow: 0 6px 20px rgba(196, 98, 42, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:active { transform: translateY(0); }
+
+        .btn-secondary {
+            background: rgba(18, 26, 26, 0.8);
+            border: 1px solid rgba(138, 168, 168, 0.2);
+            transition: all var(--transition-fast) ease;
+            font-family: 'Cinzel', serif;
+            font-size: 0.7rem;
+            letter-spacing: 0.05em;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(26, 74, 74, 0.4);
+            border-color: rgba(196, 98, 42, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .input-field {
+            background: rgba(8, 10, 13, 0.7);
+            border: 1px solid rgba(138, 168, 168, 0.15);
+            transition: all var(--transition-fast) ease;
+            font-family: 'Crimson Pro', serif;
+            color: var(--pale);
+        }
+
+        .input-field:focus {
+            border-color: rgba(196, 98, 42, 0.5);
+            box-shadow: 0 0 0 2px rgba(196, 98, 42, 0.1);
+            outline: none;
+        }
+
+        .input-field::placeholder { color: var(--mist); opacity: 1; }
+
+        input[type="number"].input-field {
+            -moz-appearance: textfield;
+            -webkit-appearance: none;
+            appearance: none;
+            background-color: rgba(8, 10, 13, 0.7);
+            color: var(--pale);
+        }
+
+        input[type="number"].input-field::-webkit-outer-spin-button,
+        input[type="number"].input-field::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .drop-zone {
+            border: 1px dashed rgba(138, 168, 168, 0.25);
+            transition: all var(--transition-normal) ease;
+        }
+
+        .drop-zone:hover,
+        .drop-zone.drag-over {
+            border-color: rgba(196, 98, 42, 0.5);
+            background: rgba(196, 98, 42, 0.04);
+        }
+
+        .form-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+        }
+
+        .form-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background: rgba(138, 168, 168, 0.2);
+            border-radius: 9999px;
+            transition: var(--transition-normal);
+        }
+
+        .slider::before {
+            content: "";
+            position: absolute;
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background: var(--mist);
+            border-radius: 50%;
+            transition: var(--transition-normal);
+        }
+
+        input:checked + .slider {
+            background: linear-gradient(135deg, var(--ember), var(--rust));
+        }
+
+        input:checked + .slider::before {
+            transform: translateX(20px);
+            background: #fff;
+        }
+
+        .toggle-btn {
+            transition: all var(--transition-fast) ease;
+        }
+
+        .toggle-btn.active {
+            background: linear-gradient(135deg, var(--ember), var(--rust));
+            border-color: transparent;
+            box-shadow: 0 4px 12px -2px rgba(196, 98, 42, 0.35);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn var(--transition-normal) ease;
+        }
+
+        .tab-content.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .build-subtab-content { animation: fadeIn var(--transition-normal) ease; }
+        .build-subtab-content.hidden { display: none; }
+
+        .status-badge {
+            padding: 0.75rem 1rem;
+            border-radius: 3px;
+            font-weight: 500;
+            font-size: 0.875rem;
+            font-family: 'Crimson Pro', serif;
+        }
+
+        .status-badge.success {
+            background: rgba(34, 197, 94, 0.08);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+
+        .status-badge.error {
+            background: rgba(196, 98, 42, 0.08);
+            color: #f87171;
+            border: 1px solid rgba(196, 98, 42, 0.2);
+        }
+
+        .status-badge.info {
+            background: rgba(26, 74, 74, 0.15);
+            color: var(--mist);
+            border: 1px solid rgba(26, 74, 74, 0.3);
+        }
+
+        .status-badge.idle {
+            background: rgba(138, 168, 168, 0.05);
+            color: rgba(138, 168, 168, 0.6);
+            border: 1px solid rgba(138, 168, 168, 0.12);
+        }
+
+        .console-box {
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.8125rem;
+            line-height: 1.6;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .console-entry {
+            padding: 0.25rem 0;
+            border-bottom: 1px solid rgba(138, 168, 168, 0.08);
+            color: var(--mist);
+        }
+
+        .console-entry:last-child { border-bottom: none; }
+        .console-timestamp { color: rgba(138, 168, 168, 0.5); margin-right: 0.5rem; }
+
+        .modal-backdrop {
+            backdrop-filter: blur(8px);
+            background: rgba(0, 0, 0, 0.85);
+            color: var(--pale);
+            z-index: 9999;
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-backdrop.flex {
+            display: flex !important;
+        }
+
+        .modal-content {
+            background: var(--deep);
+            border: 1px solid rgba(138, 168, 168, 0.15);
+            border-radius: 3px;
+        }
+
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(138, 168, 168, 0.15), transparent);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #ddeaea 0%, #adc4c4 45%, #c8a050 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+
+        .subtab-btn { 
+            transition: all var(--transition-fast) ease;
+            font-family: 'Cinzel', serif;
+            font-size: 0.65rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            border: 1px solid rgba(138, 168, 168, 0.15);
+            color: var(--mist);
+        }
+
+        .subtab-btn.active {
+            background: linear-gradient(135deg, var(--ember), var(--rust));
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 4px 12px rgba(196, 98, 42, 0.2);
+        }
+
+        .social-link {
+            transition: all var(--transition-fast) ease;
+            border-color: rgba(138, 168, 168, 0.2);
+        }
+
+        .social-link:hover {
+            background: rgba(26, 74, 74, 0.3);
+            border-color: rgba(196, 98, 42, 0.5);
+            box-shadow: 0 4px 16px rgba(196, 98, 42, 0.15);
+            transform: translateY(-2px);
+            color: var(--pale);
+        }
+
+        .border-t-12 { border-top-width: 12px; }
+
+        .color-picker-container { position: relative; }
+        .color-dropdown { position: absolute; z-index: 9999 !important; }
+
+        .scoreboard-row {
+            overflow: visible !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+        }
+
+        .scoreboard-row.card {
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+        }
+
+        .options-bar { overflow: visible !important; }
+        #scoreboard-rows { overflow: visible !important; }
+
+        .home-hero {
+            position: relative;
+            text-align: center;
+            padding: 1rem 0 2.5rem;
+            overflow: visible;
+        }
+
+        .home-hero::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 770px;
+            height: 440px;
+            background: radial-gradient(ellipse at center, rgba(196, 98, 42, 0.15) 0%, rgba(196, 98, 42, 0.06) 45%, transparent 70%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .home-title {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            color: var(--pale);
+            position: relative;
+            line-height: 1.15;
+            text-shadow: 0 0 60px rgba(196, 98, 42, 0.15);
+        }
+
+        .home-subtitle {
+            font-family: 'Crimson Pro', serif;
+            font-size: 1.15rem;
+            font-style: italic;
+            color: var(--mist);
+            margin-top: 1rem;
+            letter-spacing: 0.02em;
+            opacity: 1;
+        }
+
+        .rune-divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 0 0 2rem;
+        }
+
+        .rune-divider::before,
+        .rune-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(196, 98, 42, 0.4));
+        }
+
+        .rune-divider::after {
+            background: linear-gradient(90deg, rgba(196, 98, 42, 0.4), transparent);
+        }
+
+        .rune-divider span {
+            color: var(--ember);
+            font-size: 1.1rem;
+            opacity: 0.7;
+        }
+
+        .section-label {
+            font-family: 'Cinzel', serif;
+            font-size: 0.85rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--ember);
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            opacity: 1;
+        }
+
+        .section-label::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, rgba(196, 98, 42, 0.4), transparent);
+        }
+
+        .home-card {
+            background: linear-gradient(145deg, rgba(15, 22, 22, 0.95), rgba(8, 10, 13, 0.98));
+            border: 1px solid rgba(138, 168, 168, 0.1);
+            border-radius: 3px;
+            padding: 1rem 1.25rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .home-card::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, transparent, var(--ember), transparent);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .home-card:hover {
+            border-color: rgba(196, 98, 42, 0.3);
+            background: linear-gradient(145deg, rgba(26, 36, 36, 0.95), rgba(15, 18, 18, 0.98));
+            transform: translateX(3px);
+            box-shadow: -4px 0 20px rgba(196, 98, 42, 0.08);
+        }
+
+        .home-card:hover::after {
+            transform: scaleY(1);
+        }
+
+        .home-card-title {
+            font-family: 'Cinzel', serif;
+            font-size: 0.82rem;
+            letter-spacing: 0.06em;
+            color: var(--pale);
+            margin-bottom: 0.35rem;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .home-card-desc {
+            font-family: 'Crimson Pro', serif;
+            font-size: 1rem;
+            color: var(--mist);
+            opacity: 1;
+            line-height: 1.5;
+        }
+
+        .antler-decoration {
+            opacity: 0.06;
+            position: absolute;
+            pointer-events: none;
+        }
+
+        #loader-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: #080a0d;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.7s ease-out;
+        }
+
+        #loader-overlay.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #loader-overlay .lo-ambient {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse 60% 50% at 50% 55%,
+                rgba(26,74,74,0.14) 0%,
+                rgba(196,98,42,0.05) 50%,
+                transparent 75%);
+            pointer-events: none;
+        }
+
+        #loader-overlay .lo-grain {
+            position: absolute;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+            pointer-events: none;
+            opacity: 0.3;
+        }
+
+        #loader-overlay .lo-inner {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #loader-overlay .lo-antler-wrap {
+            position: relative;
+            margin-bottom: 2.5rem;
+        }
+
+        #loader-overlay .lo-antler-svg {
+            width: 72px;
+            height: 72px;
+            opacity: 0;
+            animation: loRiseIn 1s ease forwards 0.2s,
+                       loPulse 3.5s ease-in-out infinite 1.2s;
+        }
+
+        #loader-overlay .lo-ring-wrap {
+            position: absolute;
+            inset: -14px;
+            animation: loSpin 12s linear infinite;
+        }
+
+        @keyframes loSpin    { to { transform: rotate(360deg); } }
+        @keyframes loRiseIn  { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes loPulse   {
+            0%,100% { filter: drop-shadow(0 0 4px rgba(196,98,42,0.2)); }
+            50%     { filter: drop-shadow(0 0 12px rgba(196,98,42,0.5)); }
+        }
+
+        #loader-overlay .lo-divider {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 200px;
+            margin-bottom: 1.8rem;
+            opacity: 0;
+            animation: loRiseIn 0.8s ease forwards 0.35s;
+        }
+        #loader-overlay .lo-line {
+            flex: 1; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(196,98,42,0.35));
+        }
+        #loader-overlay .lo-line:last-child {
+            background: linear-gradient(90deg, rgba(196,98,42,0.35), transparent);
+        }
+        #loader-overlay .lo-glyph {
+            font-size: 0.55rem;
+            color: rgba(196,98,42,0.55);
+            letter-spacing: 0.15em;
+        }
+
+        #loader-overlay .lo-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.35rem;
+            font-weight: 600;
+            letter-spacing: 0.18em;
+            color: #ddeaea;
+            text-transform: uppercase;
+            opacity: 0;
+            animation: loRiseIn 0.8s ease forwards 0.5s;
+        }
+
+        #loader-overlay .lo-status {
+            font-family: 'Crimson Pro', serif;
+            font-style: italic;
+            font-size: 1rem;
+            color: #adc4c4;
+            letter-spacing: 0.04em;
+            margin-top: 0.4rem;
+            min-height: 1.4rem;
+            opacity: 0;
+            animation: loRiseIn 0.8s ease forwards 0.8s;
+            transition: opacity 0.25s ease;
+        }
+
+        #loader-overlay .lo-bar-wrap {
+            position: relative;
+            width: 160px;
+            height: 1px;
+            background: rgba(173,196,196,0.1);
+            margin-top: 2rem;
+            opacity: 0;
+            animation: loRiseIn 0.8s ease forwards 1s;
+        }
+        #loader-overlay .lo-bar-wrap::before,
+        #loader-overlay .lo-bar-wrap::after {
+            content: '◆';
+            position: absolute;
+            top: 50%; transform: translateY(-50%);
+            font-size: 5px;
+            color: rgba(196,98,42,0.5);
+        }
+        #loader-overlay .lo-bar-wrap::before { left: -10px; }
+        #loader-overlay .lo-bar-wrap::after  { right: -10px; }
+
+        #lo-bar {
+            height: 100%;
+            background: linear-gradient(90deg, rgba(196,98,42,0.6), rgba(196,98,42,1));
+            width: 0%;
+            transition: width 0.5s ease-out;
+            position: relative;
+        }
+        #lo-bar::after {
+            content: '';
+            position: absolute;
+            right: 0; top: 50%;
+            transform: translateY(-50%);
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: #e87040;
+            box-shadow: 0 0 8px 3px rgba(196,98,42,0.6);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        #lo-bar.active::after { opacity: 1; }
+
+        #app-wrapper {
+            opacity: 0;
+            transition: opacity 0.4s ease-in;
+        }
+        #app-wrapper.revealed { opacity: 1; }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabLinks = document.querySelectorAll('.tab-link');
+            const tabContents = document.querySelectorAll('.tab-content');
+            const liveBox = document.querySelector('.live-anim-box');
+
+            window.switchTab = function(tabId) {
+                tabContents.forEach(content => {
+                    content.classList.toggle('active', content.id === tabId + '-content');
+                });
+                tabLinks.forEach(link => {
+                    link.classList.toggle('active', link.dataset.tab === tabId);
+                });
+                if (liveBox) liveBox.classList.remove('active');
+
+                if (tabId === 'builds' && window.buildTabCleanup) window.buildTabCleanup();
+            };
+
+            tabLinks.forEach(link => {
+                link.addEventListener('click', () => switchTab(link.dataset.tab));
+            });
+
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden && liveBox) {
+                    liveBox.classList.remove('active');
+                }
+            });
+        });
+
+    </script>
+</head>
+<body class="font-sans antialiased" style="background-color: #080a0d; color: #adc4c4;">
+
+    <div id="loader-overlay">
+        <div class="lo-ambient"></div>
+        <div class="lo-grain"></div>
+        <div class="lo-inner">
+            <div class="lo-antler-wrap">
+                <svg class="lo-ring-wrap" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="50" r="46" stroke="rgba(196,98,42,0.22)" stroke-width="0.8" stroke-dasharray="4 10"/>
+                </svg>
+                <svg class="lo-antler-svg" viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M36 62 L36 38 L28 24 L22 14 L26 12 L32 22 L35 34 L35 20 L30 8 L36 6 L38 6 L44 8 L39 20 L39 34 L42 22 L48 12 L52 14 L46 24 L38 38 L38 62 Z"
+                          fill="rgba(221,234,234,0.9)" stroke="rgba(196,98,42,0.3)" stroke-width="0.5"/>
+                </svg>
+            </div>
+            <div class="lo-divider">
+                <div class="lo-line"></div>
+                <span class="lo-glyph">✦ ✦ ✦</span>
+                <div class="lo-line"></div>
+            </div>
+            <h1 class="lo-title">Faelans Space</h1>
+            <p class="lo-status" id="lo-status-text">Entering the space…</p>
+            <div class="lo-bar-wrap">
+                <div id="lo-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-wrapper">
+    <div class="min-h-screen flex flex-col">
+        <header class="sticky top-0 z-[1000]" style="border-bottom: 1px solid rgba(138,168,168,0.08); background: rgba(8,10,13,0.92); backdrop-filter: blur(16px);">
+            <div style="border-bottom: 1px solid rgba(138,168,168,0.06); background: rgba(5,8,10,0.6);">
+                <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center gap-1 h-8">
+                    <button class="flex items-center gap-1.5 px-3 h-full text-xs font-semibold relative" style="color: var(--pale);" disabled>
+                        <span class="material-symbols-outlined" style="font-size:13px; color: var(--ember);">sports_esports</span>
+                        Minecraft
+                        <span style="position:absolute; bottom:0; left:0.5rem; right:0.5rem; height:2px; background: var(--ember); border-radius:2px 2px 0 0;"></span>
+                    </button>
+                    <a href="https://music.faelan.org" class="flex items-center gap-1.5 px-3 h-full text-xs font-medium transition-colors" style="color: var(--mist); opacity:0.6;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">
+                        <span class="material-symbols-outlined" style="font-size:13px;">headphones</span>
+                        Music
+                    </a>
+                </div>
+            </div>
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-[1001]">
+                <div class="flex items-center justify-between h-16">
+                    <div class="flex items-center gap-3">
+                        <img src="/favicon.png" alt="Logo" class="text-ember text-2xl h-9 w-9 inline-block">
+                        <h1 class="text-xl sm:text-2xl gradient-text">Faelans Space</h1>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <a href="https://discord.com/users/1044864044143743037" target="_blank" class="social-link flex items-center justify-center w-10 h-10 rounded text-slate-400 hover:text-white" style="background: rgba(15,22,22,0.8); border: 1px solid rgba(138,168,168,0.15);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M13.545 2.907a13.2 13.2 0 0 0-3.257-1.011.05.05 0 0 0-.052.025c-.141.25-.297.577-.406.833a12.2 12.2 0 0 0-3.658 0 8 8 0 0 0-.412-.833.05.05 0 0 0-.052-.025c-1.125.194-2.22.534-3.257 1.011a.04.04 0 0 0-.021.018C.356 6.024-.213 9.047.066 12.032q.003.022.021.037a13.3 13.3 0 0 0 3.995 2.02.05.05 0 0 0 .056-.019q.463-.63.818-1.329a.05.05 0 0 0-.01-.059l-.018-.011a9 9 0 0 1-1.248-.595.05.05 0 0 1-.02-.066l.015-.019q.127-.095.248-.195a.05.05 0 0 1 .051-.007c2.619 1.196 5.454 1.196 8.041 0a.05.05 0 0 1 .053.007q.121.1.248.195a.05.05 0 0 1-.004.085 8 8 0 0 1-1.249.594.05.05 0 0 0-.03.03.05.05 0 0 0 .003.041c.24.465.515.909.817 1.329a.05.05 0 0 0 .056.019 13.2 13.2 0 0 0 4.001-2.02.05.05 0 0 0 .021-.037c.334-3.451-.559-6.449-2.366-9.106a.03.03 0 0 0-.02-.019m-8.198 7.307c-.789 0-1.438-.724-1.438-1.612s.637-1.613 1.438-1.613c.807 0 1.45.73 1.438 1.613 0 .888-.637 1.612-1.438 1.612m5.316 0c-.788 0-1.438-.724-1.438-1.612s.637-1.613 1.438-1.613c.807 0 1.451.73 1.438 1.613 0 .888-.631 1.612-1.438 1.612"/>
+                            </svg>
+                        </a>
+                        <a href="https://github.com/Faelan-Anthropawn/MC-site" target="_blank" class="social-link flex items-center justify-center w-10 h-10 rounded text-slate-400 hover:text-white" style="background: rgba(15,22,22,0.8); border: 1px solid rgba(138,168,168,0.15);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <nav style="border-top: 1px solid rgba(138,168,168,0.06);">
+                <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="flex gap-1 overflow-x-auto py-1 -mb-px">
+                        <a class="tab-link nav-link flex items-center px-4 py-3 cursor-pointer whitespace-nowrap" style="color:#8ca8a8;" data-tab="home">Home</a>
+                        <a class="tab-link nav-link flex items-center px-4 py-3 cursor-pointer whitespace-nowrap" style="color:#8ca8a8;" data-tab="builds">Build Tools</a>
+                        <a class="tab-link nav-link flex items-center px-4 py-3 cursor-pointer whitespace-nowrap" style="color:#8ca8a8;" data-tab="kit">Kit Builder</a>
+                        <a class="tab-link nav-link flex items-center px-4 py-3 cursor-pointer whitespace-nowrap" style="color:#8ca8a8;" data-tab="addons">Addons</a>
+                        <a class="tab-link nav-link flex items-center px-4 py-3 cursor-pointer whitespace-nowrap" style="color:#8ca8a8;" data-tab="scoreboard">Scoreboard Builder</a>
+                        <a class="tab-link nav-link flex items-center px-4 py-3 cursor-pointer whitespace-nowrap" style="color:#8ca8a8;" data-tab="panel">Server Panel</a>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <main class="flex-1">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+                <div id="home-content" class="tab-content active">
+                    <div class="home-hero">
+                        <p style="font-size:0.50rem; letter-spacing:0.3em; font-family:'Cinzel',serif; color:rgba(196,98,42,0.55); margin-bottom:0.75rem;">✦ &nbsp; ✦ &nbsp; ✦</p>
+                        <h2 class="home-title">Faelans Space</h2>
+                        <p class="home-subtitle" style="margin-top:0.6rem;">Self made open source tools run directly in your browser</p>
+                        <p style="font-size:0rem; letter-spacing:0.3em; font-family:'Cinzel',serif; color:rgba(196,98,42,0.55); margin-bottom:0.75rem;">✦ &nbsp; ✦ &nbsp; ✦</p>
+                        <p style="font-size:0.50rem; letter-spacing:0.3em; font-family:'Cinzel',serif; color:rgba(196,98,42,0.55); margin-bottom:0.75rem;">✦ &nbsp; ✦ &nbsp; ✦</p>
+                    </div>
+
+                    <div class="max-w-5xl mx-auto pb-16">
+                        <div class="section-label" style="margin-bottom:1.5rem;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" style="color:var(--ember);flex-shrink:0;">
+                                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Minecraft Tools
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div class="home-card home-subtab-link" data-tab="builds" data-subtab="schematic" style="padding:1.25rem 1.5rem;">
+                                <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.5rem;">
+                                    <span class="material-symbols-outlined" style="font-size:1.1rem;color:var(--ember);">upload_file</span>
+                                    <div class="home-card-title" style="margin-bottom:0;">Schematic Converter</div>
+                                </div>
+                                <div class="home-card-desc">Convert .schematic, .schem, and .litematic files into Bedrock Edition formats</div>
+                            </div>
+                            <div class="home-card home-subtab-link" data-tab="builds" data-subtab="world" style="padding:1.25rem 1.5rem;">
+                                <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.5rem;">
+                                    <span class="material-symbols-outlined" style="font-size:1.1rem;color:var(--ember);">public</span>
+                                    <div class="home-card-title" style="margin-bottom:0;">World Region Converter</div>
+                                </div>
+                                <div class="home-card-desc">Extract and convert areas from Java world saves directly into Bedrock formats</div>
+                            </div>
+                            <div class="home-card home-tab-link" data-tab="kit" style="padding:1.25rem 1.5rem;">
+                                <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.5rem;">
+                                    <span class="material-symbols-outlined" style="font-size:1.1rem;color:var(--ember);">inventory_2</span>
+                                    <div class="home-card-title" style="margin-bottom:0;">Kit Builder</div>
+                                </div>
+                                <div class="home-card-desc">Build item kits with custom enchants and export them as .mcstructure files</div>
+                            </div>
+                            <div class="home-card home-tab-link" data-tab="scoreboard" style="padding:1.25rem 1.5rem;">
+                                <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.5rem;">
+                                    <span class="material-symbols-outlined" style="font-size:1.1rem;color:var(--ember);">scoreboard</span>
+                                    <div class="home-card-title" style="margin-bottom:0;">Scoreboard Builder</div>
+                                </div>
+                                <div class="home-card-desc">Visual editor for creating titleraw displays with color codes and formatting</div>
+                            </div>
+                            <div class="home-card home-tab-link" data-tab="addons" style="padding:1.25rem 1.5rem;">
+                                <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.5rem;">
+                                    <span class="material-symbols-outlined" style="font-size:1.1rem;color:var(--ember);">extension</span>
+                                    <div class="home-card-title" style="margin-bottom:0;">Addons</div>
+                                </div>
+                                <div class="home-card-desc">Custom Bedrock addons focused on server utilities and development tools</div>
+                            </div>
+                            <div class="home-card home-tab-link" data-tab="panel" style="padding:1.25rem 1.5rem;">
+                                <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.5rem;">
+                                    <span class="material-symbols-outlined" style="font-size:1.1rem;color:var(--ember);">terminal</span>
+                                    <div class="home-card-title" style="margin-bottom:0;">Server Panel</div>
+                                </div>
+                                <div class="home-card-desc">Lightweight self-hosted control panel for managing a Bedrock Dedicated Server</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="builds-content" class="tab-content">
+                    <div class="flex flex-wrap gap-2 mb-8">
+                        <button class="build-subtab-link subtab-btn px-5 py-2.5 rounded-lg text-sm font-semibold text-slate-400 bg-surface-800 border border-slate-700/50" data-subtab="schematic">Schematic Converter</button>
+                        <button class="build-subtab-link subtab-btn px-5 py-2.5 rounded-lg text-sm font-semibold text-slate-400 bg-surface-800 border border-slate-700/50" data-subtab="world">World Converter</button>
+                    </div>
+
+                    <div id="schematic-content" class="build-subtab-content">
+                        <div class="max-w-4xl">
+                            <div class="flex items-center gap-3 mb-2">
+                                <h2 class="text-2xl font-bold text-white">Schematic Converter</h2>
+                                <button id="help-button" type="button" class="btn-secondary flex items-center justify-center w-9 h-9 rounded-lg text-slate-400 hover:text-white" title="Help">
+                                    <span class="material-symbols-outlined text-xl">help</span>
+                                </button>
+                            </div>
+                            <p class="text-slate-500 mb-8">Supporting up to 1.21.130 for .schem, .schematic, and .litematic files</p>
+
+                            <div class="space-y-6">
+                                <div id="drop-zone" class="drop-zone rounded-xl p-10 cursor-pointer">
+                                    <div class="flex flex-col items-center gap-4 text-center">
+                                        <div class="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
+                                            <span class="material-symbols-outlined text-3xl text-primary">upload_file</span>
+                                        </div>
+                                        <div>
+                                            <p class="text-white font-semibold mb-1">Schematic Selector</p>
+                                            <p id="file-name" class="text-slate-500 text-sm">Drag & drop a file here or click to browse</p>
+                                        </div>
+                                        <button id="browse-button" type="button" class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium text-white">
+                                            Browse Files
+                                        </button>
+                                        <input type="file" id="file-input" accept=".schem,.schematic,.litematic" class="hidden">
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div class="flex flex-col">
+                                        <p class="section-label">Output File</p>
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <input id="output-name" aria-label="Output file name" class="input-field h-12 px-4 rounded-lg text-white" placeholder="Name" style="background-color: var(--void); border-color: rgba(138, 168, 168, 0.2);"/>
+                                            <select id="output-format" aria-label="Output file format" class="input-field h-12 px-4 rounded-lg text-white appearance-none bg-[right_1rem_center] bg-no-repeat bg-[length:1.25em_1.25em]" style="background-image: url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 20 20\"><path stroke=\"%2394a3b8\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\" d=\"m6 8 4 4 4-4\"/></svg>')">
+                                                <option value="pack">Build Pack</option>
+                                                <option value="mcstructure">McStructure</option>
+                                                <option value="commands">Command Dump</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="section-divider"></div>
+
+                                <div>
+                                            <p class="section-label mt-4">Build Edits</p>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div class="card flex items-center justify-between p-4 rounded-lg">
+                                            <span class="text-sm font-medium text-slate-300">Hollow Build</span>
+                                            <label class="form-switch">
+                                                <input id="hollow-toggle" type="checkbox"/>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </div>
+                                        <div class="card flex items-center justify-between p-4 rounded-lg">
+                                            <span class="text-sm font-medium text-slate-300">No Falling Blocks</span>
+                                            <label class="form-switch">
+                                                <input id="structure-void-toggle" type="checkbox"/>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </div>
+                                        <div class="card flex items-center justify-between p-4 rounded-lg">
+                                            <span class="text-sm font-medium text-slate-300">Include Air Blocks</span>
+                                            <label class="form-switch">
+                                                <input id="include-air-toggle" type="checkbox"/>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="flex flex-col gap-2 mt-4">
+                                        <p class="section-label">Replace Block Types</p>
+                                        <div id="replacement-list" class="space-y-2"></div>
+                                        <button id="add-replacement" type="button" class="btn-secondary py-1.5 px-3 text-xs flex items-center gap-1 w-fit rounded-lg text-mist">
+                                            <span class="material-symbols-outlined text-sm">add</span> Add Replacement
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="section-divider"></div>
+
+                                <div>
+                                            <p class="section-label mt-4">Transformations</p>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <label class="flex flex-col">
+                                            <span class="text-sm font-medium text-slate-300 mb-2">Rotation</span>
+                                            <select id="rotation-select" class="input-field h-12 px-4 rounded-lg text-white appearance-none bg-[right_1rem_center] bg-no-repeat bg-[length:1.25em_1.25em]" style="background-image: url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 20 20\"><path stroke=\"%2394a3b8\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\" d=\"m6 8 4 4 4-4\"/></svg>')">
+                                                <option value="0">0°</option>
+                                                <option value="90">90°</option>
+                                                <option value="180">180°</option>
+                                                <option value="270">270°</option>
+                                            </select>
+                                        </label>
+                                        <div class="flex flex-col">
+                                            <span class="text-sm font-medium text-slate-300 mb-2">Mirror</span>
+                                            <div class="flex gap-2">
+                                                <button id="mirror-x" type="button" class="toggle-btn flex-1 h-12 rounded-lg bg-surface-800 text-white font-semibold border border-slate-700/50">X</button>
+                                                <button id="mirror-y" type="button" class="toggle-btn flex-1 h-12 rounded-lg bg-surface-800 text-white font-semibold border border-slate-700/50">Y</button>
+                                                <button id="mirror-z" type="button" class="toggle-btn flex-1 h-12 rounded-lg bg-surface-800 text-white font-semibold border border-slate-700/50">Z</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="section-divider"></div>
+
+                                <div class="flex justify-end">
+                                    <button id="convert-button" type="button" class="btn-primary flex items-center gap-2 px-6 py-3 rounded-lg text-white font-semibold">
+                                        <span class="material-symbols-outlined">sync</span>
+                                        Convert
+                                    </button>
+                                </div>
+
+                                <div class="space-y-4">
+                                    <div id="status-message" class="status-badge idle">Waiting to start...</div>
+
+                                    <div>
+                                        <h3 class="text-sm font-semibold text-slate-300 mb-2">Console Output</h3>
+                                        <div id="console-box" class="console-box card rounded-lg p-4">
+                                            <div class="console-entry">
+                                                <span class="console-timestamp">[--:--:--]</span>
+                                                <span class="text-slate-500">Ready. Waiting for conversion to start...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="world-content" class="build-subtab-content hidden">
+                        <div class="max-w-4xl">
+                            <div class="flex items-center gap-3 mb-2">
+                                <h2 class="text-2xl font-bold text-white">Beta - World Converter</h2>
+                                <button id="world-help-button" type="button" class="btn-secondary flex items-center justify-center w-9 h-9 rounded-lg text-slate-400 hover:text-white" title="Help">
+                                    <span class="material-symbols-outlined text-xl">help</span>
+                                </button>
+                            </div>
+                            <p class="text-slate-500 mb-8">Supporting Java worlds from 1.18.2 to 1.21.130</p>
+
+                            <div class="space-y-6">
+                                <div id="world-drop-zone" class="drop-zone rounded-xl p-10 cursor-pointer">
+                                    <div class="flex flex-col items-center gap-4 text-center">
+                                        <div class="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
+                                            <span class="material-symbols-outlined text-3xl text-primary">public</span>
+                                        </div>
+                                        <div>
+                                            <p class="text-white font-semibold mb-1">World Selector</p>
+                                            <p id="world-file-name" class="text-slate-500 text-sm">Drag & drop a file here or click to browse</p>
+                                        </div>
+                                        <button id="world-browse-button" type="button" class="btn-secondary px-4 py-2 rounded-lg text-sm font-medium text-white">
+                                            Browse Files
+                                        </button>
+                                        <input type="file" id="world-file-input" accept=".zip" class="hidden">
+                                    </div>
+                                </div>
+
+                                <div id="world-info-panel" class="rounded-xl border px-4 py-3 flex items-start gap-3" style="border-color: rgba(138, 168, 168, 0.15); background-color: rgba(138, 168, 168, 0.04);">
+                                    <span id="world-info-icon" class="material-symbols-outlined text-lg flex-shrink-0 mt-0.5" style="color: var(--mist); opacity: 0.4;">public</span>
+                                    <div class="flex-1 min-w-0">
+                                        <div id="world-info-title" class="text-sm font-semibold" style="color: var(--mist); opacity: 0.5;">No world loaded</div>
+                                        <div id="world-info-desc" class="text-xs mt-0.5 leading-relaxed text-slate-500">Select a file above to continue</div>
+                                    </div>
+                                </div>
+
+                                <div class="flex flex-col">
+                                    <p class="section-label">Region Selection</p>
+                                    <select id="world-dimension-select" class="input-field h-12 px-4 rounded-lg text-white appearance-none bg-[right_1rem_center] bg-no-repeat bg-[length:1.25em_1.25em] w-full sm:w-64" style="background-color: var(--void); border-color: rgba(138, 168, 168, 0.2); background-image: url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 20 20\"><path stroke=\"%2394a3b8\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\" d=\"m6 8 4 4 4-4\"/></svg>')">
+                                        <option value="overworld">Overworld</option>
+                                        <option value="nether">Nether (DIM-1)</option>
+                                        <option value="end">The End (DIM1)</option>
+                                    </select>
+                                </div>
+
+                                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                    <label class="flex flex-col">
+                                        <span class="text-sm font-medium text-slate-300 mb-2">X1</span>
+                                        <input id="world-x1" class="input-field h-11 px-3 rounded-lg text-white" placeholder="X1" aria-label="Coordinate X1" type="text" style="background-color: var(--void); border-color: rgba(138, 168, 168, 0.2);"/>
+                                    </label>
+                                    <label class="flex flex-col">
+                                        <span class="text-sm font-medium text-slate-300 mb-2">Y1</span>
+                                        <input id="world-y1" class="input-field h-11 px-3 rounded-lg text-white" placeholder="Y1" aria-label="Coordinate Y1" type="text" style="background-color: var(--void); border-color: rgba(138, 168, 168, 0.2);"/>
+                                    </label>
+                                    <label class="flex flex-col">
+                                        <span class="text-sm font-medium text-slate-300 mb-2">Z1</span>
+                                        <input id="world-z1" class="input-field h-11 px-3 rounded-lg text-white" placeholder="Z1" aria-label="Coordinate Z1" type="text" style="background-color: var(--void); border-color: rgba(138, 168, 168, 0.2);"/>
+                                    </label>
+                                    <label class="flex flex-col">
+                                        <span class="text-sm font-medium text-slate-300 mb-2">X2</span>
+                                        <input id="world-x2" class="input-field h-11 px-3 rounded-lg text-white" placeholder="X2" aria-label="Coordinate X2" type="text" style="background-color: var(--void); border-color: rgba(138, 168, 168, 0.2);"/>
+                                    </label>
+                                    <label class="flex flex-col">
+                                        <span class="text-sm font-medium text-slate-300 mb-2">Y2</span>
+                                        <input id="world-y2" class="input-field h-11 px-3 rounded-lg text-white" placeholder="Y2" aria-label="Coordinate Y2" type="text" style="background-color: var(--void); border-color: rgba(138, 168, 168, 0.2);"/>
+                                    </label>
+                                    <label class="flex flex-col">
+                                        <span class="text-sm font-medium text-slate-300 mb-2">Z2</span>
+                                        <input id="world-z2" class="input-field h-11 px-3 rounded-lg text-white" placeholder="Z2" aria-label="Coordinate Z2" type="text" style="background-color: var(--void); border-color: rgba(138, 168, 168, 0.2);"/>
+                                    </label>
+                                </div>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div class="flex flex-col">
+                                        <p class="section-label">Output File</p>
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <input id="world-output-name" aria-label="World output file name" class="input-field h-12 px-4 rounded-lg text-white" placeholder="Name" style="background-color: var(--void); border-color: rgba(138, 168, 168, 0.2);"/>
+                                            <select id="world-output-format" class="input-field h-12 px-4 rounded-lg text-white appearance-none bg-[right_1rem_center] bg-no-repeat bg-[length:1.25em_1.25em]" style="background-image: url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 20 20\"><path stroke=\"%2394a3b8\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\" d=\"m6 8 4 4 4-4\"/></svg>')">
+                                                <option>Build Pack</option>
+                                                <option>McStructure</option>
+                                                <option>Command Dump</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="section-divider"></div>
+
+                                <div>
+                                            <p class="section-label mt-4">Build Edits</p>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div class="card flex items-center justify-between p-4 rounded-lg">
+                                            <span class="text-sm font-medium text-slate-300">Hollow Build</span>
+                                            <label class="form-switch">
+                                                <input id="world-hollow-toggle" type="checkbox"/>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </div>
+                                        <div class="card flex items-center justify-between p-4 rounded-lg">
+                                            <span class="text-sm font-medium text-slate-300">No Falling Blocks</span>
+                                            <label class="form-switch">
+                                                <input id="world-structure-void-toggle" type="checkbox"/>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </div>
+                                        <div class="card flex items-center justify-between p-4 rounded-lg">
+                                            <span class="text-sm font-medium text-slate-300">Include Air Blocks</span>
+                                            <label class="form-switch">
+                                                <input id="world-include-air-toggle" type="checkbox"/>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="flex flex-col gap-2 mt-4">
+                                        <p class="section-label">Replace Block Types</p>
+                                        <div id="world-replacement-list" class="space-y-2"></div>
+                                        <button id="world-add-replacement" type="button" class="btn-secondary py-1.5 px-3 text-xs flex items-center gap-1 w-fit rounded-lg">
+                                            <span class="material-symbols-outlined text-sm">add</span> Add Replacement
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="section-divider"></div>
+
+                                <div>
+                                            <p class="section-label mt-4">Transformations</p>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <label class="flex flex-col">
+                                            <span class="text-sm font-medium text-slate-300 mb-2">Rotation</span>
+                                            <select id="world-rotation-select" class="input-field h-12 px-4 rounded-lg text-white appearance-none bg-[right_1rem_center] bg-no-repeat bg-[length:1.25em_1.25em]" style="background-image: url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 20 20\"><path stroke=\"%2394a3b8\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\" d=\"m6 8 4 4 4-4\"/></svg>')">
+                                                <option>0°</option>
+                                                <option>90°</option>
+                                                <option>180°</option>
+                                                <option>270°</option>
+                                            </select>
+                                        </label>
+                                        <div class="flex flex-col">
+                                            <span class="text-sm font-medium text-slate-300 mb-2">Mirror</span>
+                                            <div class="flex gap-2">
+                                                <button id="world-mirror-x" type="button" class="toggle-btn flex-1 h-12 rounded-lg bg-surface-800 text-white font-semibold border border-slate-700/50">X</button>
+                                                <button id="world-mirror-y" type="button" class="toggle-btn flex-1 h-12 rounded-lg bg-surface-800 text-white font-semibold border border-slate-700/50">Y</button>
+                                                <button id="world-mirror-z" type="button" class="toggle-btn flex-1 h-12 rounded-lg bg-surface-800 text-white font-semibold border border-slate-700/50">Z</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="section-divider"></div>
+
+                                <div class="flex justify-end">
+                                    <button id="world-convert-button" type="button" class="btn-primary flex items-center gap-2 px-6 py-3 rounded-lg text-white font-semibold">
+                                        <span class="material-symbols-outlined">sync</span>
+                                        Begin Conversion
+                                    </button>
+                                </div>
+
+                                <div class="space-y-4">
+                                    <div id="world-status-message" class="status-badge idle">Waiting to start...</div>
+
+                                    <div>
+                                        <h3 class="text-sm font-semibold text-slate-300 mb-2">Console Output</h3>
+                                        <div id="world-console-box" class="console-box card rounded-lg p-4">
+                                            <div class="console-entry">
+                                                <span class="console-timestamp">[--:--:--]</span>
+                                                <span class="text-slate-500">Ready. Waiting for conversion to start...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div id="kit-content" class="tab-content">
+                    <div class="max-w-2xl">
+                        <h2 class="text-2xl font-bold text-white mb-1">Kit Builder</h2>
+                        <p class="text-slate-500 mb-8">Build a kit inside a container block and export it as an .mcstructure file.</p>
+
+                        <div class="space-y-6">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="flex flex-col gap-1">
+                                    <p class="section-label">Kit Name</p>
+                                    <input id="kit-name-input" type="text" placeholder="my_kit" class="input-field h-12 px-4 rounded-lg text-white" style="background-color: var(--void); border-color: rgba(138, 168, 168, 0.2);" />
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <p class="section-label">Container Block</p>
+                                    <select id="kit-container-select" class="input-field h-12 px-4 rounded-lg text-white appearance-none bg-[right_1rem_center] bg-no-repeat bg-[length:1.25em_1.25em]" style="background-image: url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 20 20\"><path stroke=\"%2394a3b8\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\" d=\"m6 8 4 4 4-4\"/></svg>'); background-color: var(--void); border-color: rgba(138, 168, 168, 0.2);">
+                                        <option value="chest">Chest</option>
+                                        <option value="barrel">Barrel</option>
+                                        <option value="trapped_chest">Trapped Chest</option>
+                                        <option value="shulker_box">Shulker Box</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="section-divider"></div>
+
+                            <div>
+                                <div class="flex items-center justify-between mb-3">
+                                    <p class="section-label mb-0">Items</p>
+                                    <span id="kit-slot-counter" class="text-slate-400 text-sm">0 / 27 slots</span>
+                                </div>
+                                <div id="kit-item-list" class="space-y-2 mb-4"></div>
+                                <button id="kit-add-item" type="button" class="btn-secondary flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white">
+                                    <span class="material-symbols-outlined text-base">add</span>
+                                    Add Item
+                                </button>
+                            </div>
+
+                            <div class="section-divider"></div>
+
+                            <div class="flex flex-col gap-2">
+                                <button id="kit-generate" type="button" class="btn-primary flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-semibold text-white w-fit">
+                                    <span class="material-symbols-outlined text-base">download</span>
+                                    Generate .mcstructure
+                                </button>
+                                <p id="kit-status" class="text-sm mt-1 text-slate-400"></p>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div id="addons-content" class="tab-content">
+                    <h2 class="text-2xl font-bold text-white mb-6">Addons</h2>
+                    <div id="addons-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    </div>
+                </div>
+
+                <div id="panel-content" class="tab-content">
+                    <div class="max-w-4xl">
+
+                        <div class="flex items-start gap-4 mb-2">
+                            <div>
+                                <div class="flex items-center gap-3 mb-1">
+                                    <span class="material-symbols-outlined" style="font-size:1.6rem;color:var(--ember);">terminal</span>
+                                    <h2 class="text-2xl font-bold text-white">Server Panel</h2>
+                                </div>
+                                <p class="text-slate-500">Lightweight, self-hosted control panel for Minecraft Bedrock Dedicated Servers</p>
+                            </div>
+                        </div>
+
+                        <div class="section-divider" style="margin: 1.5rem 0;"></div>
+
+                        <div style="background:linear-gradient(135deg,rgba(196,98,42,0.12),rgba(139,58,26,0.08));border:1px solid rgba(196,98,42,0.35);border-radius:6px;padding:1rem 1.25rem;margin-bottom:2rem;display:flex;gap:0.75rem;align-items:flex-start;">
+                            <span class="material-symbols-outlined" style="color:var(--ember);font-size:1.3rem;flex-shrink:0;margin-top:0.05rem;">warning</span>
+                            <div>
+                                <p style="font-family:'Cinzel',serif;font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--ember);margin-bottom:0.35rem;">Important — Not an All-in-One Solution</p>
+                                <p class="text-slate-400" style="font-size:0.9rem;line-height:1.6;">This panel controls the server process only. <strong class="text-slate-300">All network configuration — port forwarding, firewalls, and external access — must be handled manually or through a tunnelling service such as <a href="https://playit.gg" target="_blank" style="color:var(--ember);text-decoration:underline;text-underline-offset:2px;">playit.gg</a>.</strong> If you are not comfortable managing networking yourself, this tool may not be the right fit for your setup.</p>
+                            </div>
+                        </div>
+
+                        <div class="card p-6 mb-5">
+                            <div class="section-label" style="margin-bottom:1rem;">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" style="color:var(--ember);flex-shrink:0;"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                About
+                            </div>
+                            <p class="text-slate-400 leading-relaxed mb-3">The Panel is a built around only the most commonly needed tools using a simple swing UI to keep resource footprint lightweight.  This is a tool designed for  <strong class="text-slate-300">experienced users</strong> who already understand how BDS works and want a reliable, resource-efficient UI rather than a bloated web dashboard.</p>
+                            <p class="text-slate-400 leading-relaxed">The UI is built with Java Swing, keeping the footprint tiny and eliminating the need for a browser or web server to run the panel itself. Because of this, <strong class="text-slate-300">Java must be installed</strong> on the machine running the panel. Its built to run on both <strong class="text-slate-300">Windows and Linux</strong> (Linux only officially supports Ubuntu based distributions)</p>
+                        </div>
+
+                        <div class="card p-4 mb-5" style="text-align:center;">
+                            <div class="section-label" style="margin-bottom:1rem;justify-content:center;">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" style="color:var(--ember);flex-shrink:0;"><rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M3 9h18" stroke="currentColor" stroke-width="1.5"/></svg>
+                                Panel Preview
+                            </div>
+                            <img src="/minecraft/panel/panel.png" alt="Server Panel UI screenshot" style="max-width:100%;border-radius:4px;border:1px solid rgba(138,168,168,0.12);display:inline-block;"/>
+                        </div>
+
+                        <div class="card p-6 mb-5">
+                            <div class="section-label" style="margin-bottom:1.25rem;">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" style="color:var(--ember);flex-shrink:0;"><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/></svg>
+                                Includes
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+                                <div style="display:flex;gap:0.75rem;align-items:flex-start;padding:0.75rem;background:rgba(10,12,15,0.5);border:1px solid rgba(138,168,168,0.08);border-radius:4px;">
+                                    <span class="material-symbols-outlined" style="color:var(--ember);font-size:1.1rem;flex-shrink:0;margin-top:0.1rem;">backup</span>
+                                    <div>
+                                        <p style="font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--pale);margin-bottom:0.2rem;">Automated Backups</p>
+                                        <p class="text-slate-500" style="font-size:0.82rem;line-height:1.5;">Scheduled world and server backups so you never lose progress.</p>
+                                    </div>
+                                </div>
+
+                                <div style="display:flex;gap:0.75rem;align-items:flex-start;padding:0.75rem;background:rgba(10,12,15,0.5);border:1px solid rgba(138,168,168,0.08);border-radius:4px;">
+                                    <span class="material-symbols-outlined" style="color:var(--ember);font-size:1.1rem;flex-shrink:0;margin-top:0.1rem;">autorenew</span>
+                                    <div>
+                                        <p style="font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--pale);margin-bottom:0.2rem;">Automated Restarts</p>
+                                        <p class="text-slate-500" style="font-size:0.82rem;line-height:1.5;">Automatically restart the server on crash or on a defined schedule.</p>
+                                    </div>
+                                </div>
+
+                                <div style="display:flex;gap:0.75rem;align-items:flex-start;padding:0.75rem;background:rgba(10,12,15,0.5);border:1px solid rgba(138,168,168,0.08);border-radius:4px;">
+                                    <span class="material-symbols-outlined" style="color:var(--ember);font-size:1.1rem;flex-shrink:0;margin-top:0.1rem;">schedule</span>
+                                    <div>
+                                        <p style="font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--pale);margin-bottom:0.2rem;">Schedules</p>
+                                        <p class="text-slate-500" style="font-size:0.82rem;line-height:1.5;">Set timed tasks such as commands or maintenance actions to run automatically.</p>
+                                    </div>
+                                </div>
+
+                                <div style="display:flex;gap:0.75rem;align-items:flex-start;padding:0.75rem;background:rgba(10,12,15,0.5);border:1px solid rgba(138,168,168,0.08);border-radius:4px;">
+                                    <span class="material-symbols-outlined" style="color:var(--ember);font-size:1.1rem;flex-shrink:0;margin-top:0.1rem;">terminal</span>
+                                    <div>
+                                        <p style="font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--pale);margin-bottom:0.2rem;">Console</p>
+                                        <p class="text-slate-500" style="font-size:0.82rem;line-height:1.5;">Live server console with command input and editable prunning.</p>
+                                    </div>
+                                </div>
+
+                                <div style="display:flex;gap:0.75rem;align-items:flex-start;padding:0.75rem;background:rgba(10,12,15,0.5);border:1px solid rgba(138,168,168,0.08);border-radius:4px;">
+                                    <span class="material-symbols-outlined" style="color:var(--ember);font-size:1.1rem;flex-shrink:0;margin-top:0.1rem;">open_in_new</span>
+                                    <div>
+                                        <p style="font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--pale);margin-bottom:0.2rem;">Pop-Out Windows</p>
+                                        <p class="text-slate-500" style="font-size:0.82rem;line-height:1.5;">Detach panels into their own windows to arrange your workspace however you need.</p>
+                                    </div>
+                                </div>
+
+                                <div style="display:flex;gap:0.75rem;align-items:flex-start;padding:0.75rem;background:rgba(10,12,15,0.5);border:1px solid rgba(138,168,168,0.08);border-radius:4px;">
+                                    <span class="material-symbols-outlined" style="color:var(--ember);font-size:1.1rem;flex-shrink:0;margin-top:0.1rem;">folder_open</span>
+                                    <div>
+                                        <p style="font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--pale);margin-bottom:0.2rem;">File Manager</p>
+                                        <p class="text-slate-500" style="font-size:0.82rem;line-height:1.5;">Browse, edit, and manage server files directly from the panel without leaving the app.</p>
+                                    </div>
+                                </div>
+
+                                <div style="display:flex;gap:0.75rem;align-items:flex-start;padding:0.75rem;background:rgba(10,12,15,0.5);border:1px solid rgba(138,168,168,0.08);border-radius:4px;">
+                                    <span class="material-symbols-outlined" style="color:var(--ember);font-size:1.1rem;flex-shrink:0;margin-top:0.1rem;">system_update_alt</span>
+                                    <div>
+                                        <p style="font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--pale);margin-bottom:0.2rem;">Easy Updates</p>
+                                        <p class="text-slate-500" style="font-size:0.82rem;line-height:1.5;">Update BDS to the latest version with a single click.</p>
+                                    </div>
+                                </div>
+
+                                <div style="display:flex;gap:0.75rem;align-items:flex-start;padding:0.75rem;background:rgba(10,12,15,0.5);border:1px solid rgba(138,168,168,0.08);border-radius:4px;">
+                                    <span class="material-symbols-outlined" style="color:var(--ember);font-size:1.1rem;flex-shrink:0;margin-top:0.1rem;">power_settings_new</span>
+                                    <div>
+                                        <p style="font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--pale);margin-bottom:0.2rem;">Power Controls</p>
+                                        <p class="text-slate-500" style="font-size:0.82rem;line-height:1.5;">Start, stop, and restart the server from with just a click.</p>
+                                    </div>
+                                </div>
+
+                                <div style="display:flex;gap:0.75rem;align-items:flex-start;padding:0.75rem;background:rgba(10,12,15,0.5);border:1px solid rgba(138,168,168,0.08);border-radius:4px;">
+                                    <span class="material-symbols-outlined" style="color:var(--ember);font-size:1.1rem;flex-shrink:0;margin-top:0.1rem;">devices</span>
+                                    <div>
+                                        <p style="font-family:'Cinzel',serif;font-size:0.68rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--pale);margin-bottom:0.2rem;">Windows &amp; Linux Support</p>
+                                        <p class="text-slate-500" style="font-size:0.82rem;line-height:1.5;">Runs on both platforms, keeping the experience consistent regardless of your OS.</p>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- Download -->
+                        <div class="card p-6 mb-5" style="text-align:center;">
+                            <a href="https://drive.proton.me/urls/8FT4KW5YS8#qFpzLLXqeGQp" target="_blank" rel="noopener noreferrer" class="btn-primary inline-flex items-center gap-2 px-8 py-3 rounded-lg text-white font-semibold" style="text-decoration:none;">
+                                <span class="material-symbols-outlined" style="font-size:1.2rem;vertical-align:middle;">download</span>
+                                Download Server Panel
+                            </a>
+                        </div>
+
+                        <div class="card p-6 mb-5">
+                            <div class="section-label" style="margin-bottom:1rem;">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" style="color:var(--ember);flex-shrink:0;"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/><path d="M12 8v4m0 4h.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                                Technical Notes
+                            </div>
+                            <ul class="space-y-2 text-slate-400" style="font-size:0.9rem;line-height:1.7;list-style:none;padding:0;margin:0;">
+                                <li style="display:flex;gap:0.6rem;align-items:flex-start;"><span style="color:var(--ember);flex-shrink:0;">—</span>The UI is written in Java Swing to stay lightweight and dependency-free. No browser, no Node, no Python runtime required.</li>
+                                <li style="display:flex;gap:0.6rem;align-items:flex-start;"><span style="color:var(--ember);flex-shrink:0;">—</span><strong class="text-slate-300">Java must be installed</strong> on the machine running the panel. Any modern JRE (Java 11 or newer) will work.</li>
+                                <li style="display:flex;gap:0.6rem;align-items:flex-start;"><span style="color:var(--ember);flex-shrink:0;">—</span>This tool is intended for <strong class="text-slate-300">experienced server operators</strong> who are comfortable with BDS configuration and basic networking concepts.</li>
+                                <li style="display:flex;gap:0.6rem;align-items:flex-start;"><span style="color:var(--ember);flex-shrink:0;">—</span>Network exposure (port forwarding, firewalls, domain setup) is entirely outside the scope of this panel and must be configured separately.</li>
+                            </ul>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div id="scoreboard-content" class="tab-content">
+                    <div class="max-w-4xl">
+                        <div class="flex items-center gap-3 mb-2">
+                            <h2 class="text-2xl font-bold text-white">Scoreboard Builder</h2>
+                            <button id="scoreboard-help-button" type="button" class="btn-secondary flex items-center justify-center w-9 h-9 rounded-lg text-slate-400 hover:text-white" title="Help">
+                                <span class="material-symbols-outlined text-xl">help</span>
+                            </button>
+                        </div>
+                        <p class="text-slate-500 mb-8">Build titleraw commands for Minecraft Bedrock Edition actionbar displays</p>
+
+                        <div class="space-y-6">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <label class="flex flex-col">
+                                    <span class="text-sm font-medium text-slate-300 mb-2">Target Selector</span>
+                                    <input id="scoreboard-target" class="input-field h-12 px-4 rounded-lg text-white" placeholder="@s" value="@s"/>
+                                </label>
+                                <label class="flex flex-col">
+                                    <span class="text-sm font-medium text-slate-300 mb-2">Display Type</span>
+                                    <select id="scoreboard-display-type" class="input-field h-12 px-4 rounded-lg text-white appearance-none bg-[right_1rem_center] bg-no-repeat bg-[length:1.25em_1.25em]" style="background-image: url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 20 20\"><path stroke=\"%2394a3b8\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"1.5\" d=\"m6 8 4 4 4-4\"/></svg>')">
+                                        <option value="actionbar">Actionbar</option>
+                                        <option value="title">Title</option>
+                                        <option value="subtitle">Subtitle</option>
+                                    </select>
+                                </label>
+                            </div>
+
+                            <div class="section-divider"></div>
+
+                            <div>
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="text-lg font-semibold text-white">Content Rows</h3>
+                                    <button id="scoreboard-add-row" type="button" class="btn-primary flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white">
+                                        <span class="material-symbols-outlined text-lg">add</span>
+                                        Add Row
+                                    </button>
+                                </div>
+
+                                <div id="scoreboard-rows" class="space-y-3">
+                                </div>
+                            </div>
+
+                            <div class="section-divider"></div>
+
+                            <div>
+                                <h3 class="text-lg font-semibold text-white mb-4">Preview</h3>
+                                <div id="scoreboard-preview" class="card p-6 min-h-[100px] flex items-start justify-start text-left bg-black/40 border-slate-700/50 rounded-xl overflow-hidden">
+                                    <div id="preview-content" class="text-xl sm:text-2xl break-words w-full font-mono"></div>
+                                </div>
+                            </div>
+
+                            <div class="section-divider"></div>
+
+                            <div>
+                                <h3 class="text-lg font-semibold text-white mb-4">Generated Command</h3>
+                                <div class="relative">
+                                    <textarea id="scoreboard-output" readonly class="w-full h-32 resize-none rounded-lg text-white input-field p-4 text-sm font-mono" placeholder="Add rows to generate your command..."></textarea>
+                                    <button id="scoreboard-copy" type="button" class="absolute top-3 right-3 btn-secondary flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-white">
+                                        <span class="material-symbols-outlined text-base">content_copy</span>
+                                        Copy
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+    </div>
+
+    <div id="addon-modal" class="hidden fixed inset-0 z-[9999] items-center justify-center p-4 modal-backdrop">
+        <div class="relative w-full max-w-2xl card rounded-2xl">
+            <div class="flex items-center justify-between px-6 pt-6 pb-4 border-b border-slate-700/50">
+                <h2 id="modal-title" class="text-2xl font-bold text-white"></h2>
+                <button id="modal-close-btn" class="text-slate-400 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined text-2xl">close</span>
+                </button>
+            </div>
+            <div class="px-6 py-6">
+                <div id="modal-description-container" class="mb-6 max-h-96 overflow-y-auto rounded-lg bg-surface-900 p-4 border border-slate-700/30">
+                    <p id="modal-description" class="text-slate-400 leading-relaxed whitespace-pre-wrap"></p>
+                </div>
+                <button id="modal-download-btn" class="w-full btn-primary py-4 px-6 rounded-lg font-semibold text-white">
+                    <span class="flex items-center justify-center gap-2">
+                        <span class="material-symbols-outlined">download</span>
+                        Download Addon
+                    </span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="help-modal" class="hidden fixed inset-0 z-[9999] items-center justify-center p-4 modal-backdrop">
+        <div class="relative w-full max-w-2xl card rounded-2xl">
+            <div class="flex items-center justify-between px-6 pt-6 pb-4 border-b border-slate-700/50">
+                <h2 id="help-modal-title" class="text-2xl font-bold text-white">Help</h2>
+                <button id="help-modal-close-btn" class="text-slate-400 hover:text-white transition-colors">
+                    <span class="material-symbols-outlined text-2xl">close</span>
+                </button>
+            </div>
+            <div class="px-6 py-6">
+                <div id="help-modal-description-container" class="max-h-[500px] overflow-y-auto rounded-lg bg-surface-900 p-6 border border-slate-700/30">
+                    <div id="help-modal-content" class="text-slate-400 leading-relaxed"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="./tab-navigation.js"></script>
+    <script type="module" src="./app.js"></script>
+    <script type="module" src="./minecraft/builds/input/world-converter.js"></script>
+    <script type="module" src="./minecraft/addons/addons.js"></script>
+    <script type="module" src="./minecraft/scoreboard-builder.js"></script>
+    <script type="module" src="./minecraft/builds/general/block-stream.js"></script>
+    <script type="module" src="./minecraft/builds/outputs/command-writer.js"></script>
+    <script type="module" src="./minecraft/builds/general/output-sinks.js"></script>
+    <script type="module" src="./minecraft/builds/general/schematic-writer.js"></script>
+    <script type="module" src="./minecraft/builds/input/mca-reader.js"></script>
+    <script type="module" src="./minecraft/builds/input/schematic-reader.js"></script>
+    <script type="module" src="./minecraft/builds/input/world-reader.js"></script>
+    <script type="module" src="./minecraft/builds/input/litematic.js"></script>
+    <script type="module" src="./minecraft/builds/edits/structure-void.js"></script>
+    <script type="module" src="./minecraft/builds/edits/rotation.js"></script>
+    <script type="module" src="./minecraft/builds/edits/mirroring.js"></script>
+    <script type="module" src="./minecraft/builds/edits/hollowing.js"></script>
+
+
+    </div>
+
+    <script>
+        (function () {
+            const overlay    = document.getElementById('loader-overlay');
+            const appWrapper = document.getElementById('app-wrapper');
+            const statusEl   = document.getElementById('lo-status-text');
+            const bar        = document.getElementById('lo-bar');
+
+            const statuses = [
+                "Entering the space\u2026",
+                "Gathering tools\u2026",
+                "Tuning the instruments\u2026",
+                "Almost ready\u2026"
+            ];
+
+            let progress    = 0;
+            let statusIndex = 0;
+            let resolved    = false;
+
+            function setStatus(text) {
+                statusEl.style.opacity = 0;
+                setTimeout(() => {
+                    statusEl.textContent = text;
+                    statusEl.style.opacity = 1;
+                }, 220);
+            }
+
+            const interval = setInterval(() => {
+                if (progress < 88) {
+                    progress += Math.random() * 14;
+                    if (progress > 88) progress = 88;
+                    bar.style.width = progress + '%';
+                    bar.classList.add('active');
+                }
+                const threshold = (statusIndex + 1) * 22;
+                if (progress > threshold && statusIndex < statuses.length - 1) {
+                    statusIndex++;
+                    setStatus(statuses[statusIndex]);
+                }
+            }, 420);
+
+            function dismiss() {
+                if (resolved) return;
+                resolved = true;
+                clearInterval(interval);
+
+                progress = 100;
+                bar.style.width = '100%';
+                setStatus("Ready.");
+
+                setTimeout(() => {
+                    overlay.classList.add('fade-out');
+                    appWrapper.classList.add('revealed');
+
+                    overlay.addEventListener('transitionend', () => {
+                        overlay.remove();
+                    }, { once: true });
+                }, 450);
+            }
+
+            window.addEventListener('load', () => {
+                setTimeout(dismiss, 600);
+            });
+
+            setTimeout(dismiss, 12000);
+        })();
+    </script>
+</body>
+</html>
