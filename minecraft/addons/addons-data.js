@@ -40,13 +40,6 @@ export const addons = [
     shortDescription: 'Mimick the style of PvP on servers such as the Hive',
     fullDescription: 'This is a 3 part addon<br>-Knockback - This edits knockback to be slightly stronger and more floaty<br>-Bow dings - Hitting another player with a bow makes a ding sound effect<br>-Stats - Adds a means to track the kills and deaths of a player.  (scoreboards arent automatically added.  It uses the scores of "death" and "kills")',
     downloadUrl: 'https://drive.proton.me/urls/6YH6ZX5XAG#hzVHoWjxmoU8'
-  },
-  {
-    id: 'more soon',
-    title: 'More soon',
-    shortDescription: 'Feel free to message me ideas',
-    fullDescription: 'Ill be adapting more stuff that people keep asking me for just been busy',
-    downloadUrl: '#'
   }
 ];
 
